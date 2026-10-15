@@ -12,11 +12,13 @@ type UserRepository interface {
 	Create(user *model.User) error
 	GetByUsername(username string) (*model.User, error)
 	GetByEmail(email string) (*model.User, error)
+	GetById(id int) (*model.User, error)
 }
 
 var (
 	ErrUserNotFoundByEmail    = errors.New("user not found by email")
 	ErrUserNotFoundByUsername = errors.New("user not found by username")
+	ErrUserNotFoundById       = errors.New("user not found by id")
 	ErrEmailAlreadyExists     = errors.New("user with this email already exists")
 	ErrUsernameAlreadyExists  = errors.New("user with this username already exists")
 	ErrInvalidPassword        = errors.New("password is incorrect")
@@ -110,6 +112,39 @@ func (r PostrgresUserRepository) GetByUsername(username string) (*model.User, er
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrUserNotFoundByUsername
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r PostrgresUserRepository) GetById(id int) (*model.User, error) {
+	var user model.User
+
+	query := `
+		SELECT id, name, age, username, password_hash, email
+		FROM users
+		WHERE id = $1
+	`
+
+	err := r.conn.QueryRow(
+		context.Background(),
+		query,
+		id,
+	).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Age,
+		&user.Username,
+		&user.Password,
+		&user.Email,
+	)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrUserNotFoundById
 	}
 
 	if err != nil {

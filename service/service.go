@@ -77,7 +77,7 @@ func (s *UserService) Login(identifier string, identifierType string, password s
 		return nil, err
 	}
 
-	if !utils.CheckPassword(password, user.Password) {
+	if !utils.CheckPassword(user.Password, password) {
 		return nil, repository.ErrInvalidPassword
 	}
 
@@ -91,4 +91,13 @@ func (s *UserService) Login(identifier string, identifierType string, password s
 	}
 
 	return &responseToken, nil
+}
+
+func (s *UserService) GetProfile(userID int) (*model.User, error) {
+	user, err := s.repository.GetById(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

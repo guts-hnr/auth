@@ -31,6 +31,13 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
+type ProfileResponse struct {
+	Name     string `json:"name"`
+	Age      int    `json:"age"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
 func RegisterValidate(user UserRegister) error {
 	return validate.Struct(user)
 }

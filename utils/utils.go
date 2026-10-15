@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -39,4 +40,32 @@ func GenerateToken(userId int, secret string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(secret))
+}
+
+func ValidateToken(tokenstring string, secret string) (int, error) {
+	claims := &jwt.RegisteredClaims{}
+
+	token, err := jwt.ParseWithClaims(
+		tokenstring,
+		claims,
+		func(token *jwt.Token) (any, error) {
+			return []byte(secret), nil
+		},
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+	)
+
+	if err != nil {
+		return 0, err
+	}
+
+	if !token.Valid {
+		return 0, errors.New("invalid token")
+	}
+
+	userId, err := strconv.Atoi(claims.Subject)
+	if err != nil {
+		return 0, err
+	}
+
+	return userId, nil
 }
