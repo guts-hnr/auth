@@ -9,11 +9,13 @@ import (
 
 type UserService struct {
 	repository repository.UserRepository
+	jwtSecret  string
 }
 
-func NewUserService(repository repository.UserRepository) *UserService {
+func NewUserService(repo repository.UserRepository, jwtSecret string) *UserService {
 	return &UserService{
-		repository: repository,
+		repository: repo,
+		jwtSecret:  jwtSecret,
 	}
 }
 
@@ -58,7 +60,7 @@ func (s *UserService) Register(input model.UserRegister) error {
 	return s.repository.Create(&user)
 }
 
-func (s *UserService) Login(identifier string, identifierType string, password string) error {
+func (s *UserService) Login(identifier string, identifierType string, password string) (*model.LoginResponse, error) {
 	var user *model.User
 	var err error
 
@@ -68,16 +70,25 @@ func (s *UserService) Login(identifier string, identifierType string, password s
 	case "username":
 		user, err = s.repository.GetByUsername(identifier)
 	default:
-		return repository.ErrInvalidIdentifierType
+		return nil, repository.ErrInvalidIdentifierType
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if condition := utils.CheckPassword(password, user.Password); condition != true {
-		return repository.ErrInvalidPassword
+	if !utils.CheckPassword(password, user.Password) {
+		return nil, repository.ErrInvalidPassword
 	}
 
-	return nil
+	token, err := utils.GenerateToken(user.ID, s.jwtSecret)
+	if err != nil {
+		return nil, err
+	}
+
+	responseToken := model.LoginResponse{
+		Token: token,
+	}
+
+	return &responseToken, nil
 }

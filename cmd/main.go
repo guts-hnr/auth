@@ -21,6 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	secreteCode := os.Getenv("JWT_SECRET_KEY")
 	dbURL := os.Getenv("DB_URL")
 	conn, err := database.ConnectPostgres(dbURL)
 	if err != nil {
@@ -30,7 +31,7 @@ func main() {
 
 	userRepository := repository.NewPostrgresUserRepository(conn)
 
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, secreteCode)
 
 	userHandler := handler.NewUserHandler(userService)
 

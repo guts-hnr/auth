@@ -1,6 +1,10 @@
 package utils
 
 import (
+	"strconv"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,4 +27,16 @@ func CheckPassword(hashedPassword, password string) bool {
 	)
 
 	return err == nil
+}
+
+func GenerateToken(userId int, secret string) (string, error) {
+	claims := jwt.RegisteredClaims{
+		Subject:   strconv.Itoa(userId),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString([]byte(secret))
 }

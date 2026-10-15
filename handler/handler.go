@@ -37,20 +37,22 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var userData model.UserLogin
+	var request model.UserLogin
 
-	err := json.NewDecoder(r.Body).Decode(&userData)
+	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	err = h.userService.Login(userData.Identifier, userData.IdentifierType, userData.Password)
+	response, err := h.userService.Login(request.Identifier, request.IdentifierType, request.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	_, _ = w.Write([]byte("success login"))
+
+	json.NewEncoder(w).Encode(response)
 }
