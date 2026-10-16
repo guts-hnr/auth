@@ -36,7 +36,7 @@ func main() {
 
 	userHandler := handler.NewUserHandler(userService)
 
-	authMiddleware := middleware.NewAythMiddleware(jwtSecret)
+	authMiddleware := middleware.NewAuthMiddleware(jwtSecret)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /register", userHandler.Register)

@@ -30,7 +30,7 @@ func CheckPassword(hashedPassword, password string) bool {
 	return err == nil
 }
 
-func GenerateToken(userId int, secret string) (string, error) {
+func GenerateToken(userId int, jwtSecret string) (string, error) {
 	claims := jwt.RegisteredClaims{
 		Subject:   strconv.Itoa(userId),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -39,17 +39,17 @@ func GenerateToken(userId int, secret string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString([]byte(secret))
+	return token.SignedString([]byte(jwtSecret))
 }
 
-func ValidateToken(tokenstring string, secret string) (int, error) {
+func ValidateToken(tokenstring string, jwtSecret string) (int, error) {
 	claims := &jwt.RegisteredClaims{}
 
 	token, err := jwt.ParseWithClaims(
 		tokenstring,
 		claims,
 		func(token *jwt.Token) (any, error) {
-			return []byte(secret), nil
+			return []byte(jwtSecret), nil
 		},
 		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
 	)

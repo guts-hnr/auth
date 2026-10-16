@@ -16,7 +16,7 @@ type AuthMiddleware struct {
 	jwtSecret string
 }
 
-func NewAythMiddleware(jwtSecret string) *AuthMiddleware {
+func NewAuthMiddleware(jwtSecret string) *AuthMiddleware {
 	return &AuthMiddleware{
 		jwtSecret: jwtSecret,
 	}
